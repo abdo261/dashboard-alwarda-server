@@ -1,0 +1,97 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        Int        @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String  @unique
+  password  String
+  phone     String
+  isOwner   Boolean    @default(false)
+  centreId  Int        @unique
+  centre    Centres    @relation(fields: [centreId], references: [id])
+  students  Students[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Levels {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique
+  students Students[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Students {
+  id               Int      @id @default(autoincrement())
+  firstName        String
+  lastName         String
+  phoneParent      String
+  phone            String
+  sex              Sex
+  registrationDate DateTime
+  registredBy      Int
+  user             Users    @relation(fields: [registredBy], references: [id])
+  levelId          Int
+  level            Levels   @relation(fields: [levelId], references: [id])
+  centreId         Int
+  centre           Centres  @relation(fields: [centreId], references: [id])
+
+  subjects Subjects[]
+  payments Payments[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Centres {
+  id       Int        @id @default(autoincrement())
+  name     String     @unique
+  location String
+  color    String
+  user     Users?
+  students Students[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subjects {
+  id            Int        @id @default(autoincrement())
+  name          String     @unique
+  pricePerMonth Float
+  students      Students[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Payments {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  student     Students @relation(fields: [studentId], references: [id])
+  month       String
+  totalAmount Float
+  amountPaid  Float
+  amountDue   Float
+  discount    Float
+  dueDate     DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Sex {
+  boy
+  girl
+}
